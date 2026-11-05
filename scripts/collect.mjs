@@ -65,7 +65,18 @@ export async function enrich(bundle, env = process.env, fetcher = fetch) {
       if (job && typeof a.summary === 'string') job.analysis = {summary:plain(a.summary).slice(0,400), gaps:Array.isArray(a.gaps) ? a.gaps.slice(0,3).map(g=>plain(g).slice(0,150)) : []};
     }
     bundle.ai = {status:'ok', model:env.GEMINI_MODEL};
-  } catch { bundle.ai = {status:'unavailable', message:'AI skipped. Basic matching continues; no retry or paid fallback.'}; }
+} catch (error) {
+  const reason = /^HTTP \d+$/.test(error.message)
+    ? error.message
+    : error.name === 'SyntaxError'
+      ? 'Invalid JSON response'
+      : error.name === 'TimeoutError'
+        ? 'Request timed out'
+        : 'Connection or response processing failed';
+
+  console.warn('Gemini analysis failed:', reason);
+  bundle.ai = {status: 'unavailable', message: reason};
+}
   return bundle;
 }
 
