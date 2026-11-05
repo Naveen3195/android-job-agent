@@ -1,0 +1,5 @@
+{
+  "himalayas": {"enabled": true, "queries": ["android", "kotlin"], "maxPages": 3},
+  "greenhouse": ["chargebee", "browserstack", "postman", "razorpay"],
+  "lever": ["slice", "meesho"]
+}
