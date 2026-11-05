@@ -1,0 +1,61 @@
+name: Refresh jobs and deploy
+on:
+  push:
+    branches: [main]
+  schedule:
+    - cron: '47 2 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Test matching and collection
+        run: npm test
+      - name: Restore previous job data
+        uses: actions/cache/restore@v4
+        with:
+          path: site/data/jobs.json
+          key: jobs-${{ github.run_id }}-${{ github.run_attempt }}
+          restore-keys: jobs-
+      - name: Collect free job sources
+        run: npm run collect
+        env:
+          ENABLE_GEMINI: ${{ vars.ENABLE_GEMINI }}
+          GEMINI_FREE_TIER_CONFIRMED: ${{ vars.GEMINI_FREE_TIER_CONFIRMED }}
+          GEMINI_MODEL: ${{ vars.GEMINI_MODEL }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+      - uses: actions/cache/save@v4
+        with:
+          path: site/data/jobs.json
+          key: jobs-${{ github.run_id }}-${{ github.run_attempt }}
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v4
+        with:
+          path: site
+          retention-days: 1
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Publish dashboard
+        id: deployment
+        uses: actions/deploy-pages@v4
