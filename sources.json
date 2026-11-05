@@ -1,5 +1,17 @@
 {
-  "himalayas": {"enabled": true, "queries": ["android", "kotlin"], "maxPages": 3},
-  "greenhouse": ["chargebee", "browserstack", "postman", "razorpay"],
-  "lever": ["slice", "meesho"]
+  "himalayas": {
+    "enabled": true,
+    "queries": ["android", "kotlin"],
+    "maxPages": 3
+  },
+  "greenhouse": [
+    "conviva",
+    "gomotive",
+    "capco",
+    "razorpaysoftwareprivatelimited"
+  ],
+  "lever": [
+    "safe",
+    "meesho"
+  ]
 }
